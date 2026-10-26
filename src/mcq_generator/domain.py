@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 @dataclass(frozen=True)
 class ScienceQAItem:
@@ -7,7 +8,7 @@ class ScienceQAItem:
     choices: tuple[str, ...]
     answer: int
     hint: str
-    image: str
+    image: Path
     task: str
     grade: int
     subject: str
