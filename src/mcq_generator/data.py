@@ -1,7 +1,6 @@
 # src/mcq_generator/data.py
 '''
 data.py: only file that knows the raw structure of ScienceQA
-TODO: write a function that converts a line of the ScienceQA dataset into a ScienceQAItem Object
 
 '''
 
@@ -43,3 +42,6 @@ def load_items(csv_path: Path, images_dir: Path) -> list[ScienceQAItem]:
     df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
     df =  df[df["image"] != ""]
     return [row_to_item(row, images_dir) for row in df.to_dict("records")]
+
+def drop_image_choices(items: list[ScienceQAItem]) -> list[ScienceQAItem]:
+    return [i for i in items if not (i.image.parent / "choice_0.png").exists()]
