@@ -1,0 +1,11 @@
+Given the CHARACTERISTICS below and the QUESTION given
+by an AI assistant as a response to the CHARACTERISTICS
+Does the QUESTION comply with the following
+QUALITY_CRITERIA (which are provided in JSON format,
+with keys \"property\" and \"definition\")?
+Notice that this QUESTION will be used for assessing
+Student Grade Level: {grade}.
+
+CHARACTERISTICS: ```{characteristics}```
+QUESTION: ```{question}```
+QUALITY_CRITERIA: ```{criteria}``
