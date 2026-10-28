@@ -22,3 +22,12 @@ class ScienceQAItem:
     @property
     def answer_text(self) -> str:
         return self.choices[self.answer]
+
+@dataclass(frozen=True)
+class Query:
+    image: Path
+    grade: int
+    subject: str
+    topic: str
+    category: str
+    skill: str
