@@ -1,32 +1,53 @@
 """
-index.py: generates the corpus where the images are embedded
+index.py: embeds corpus images and stores them, with their metadata, in ChromaDB
 """
+from pathlib import Path
+
+import chromadb
 import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
-from pathlib import Path
-
 
 from mcq_generator.domain import ScienceQAItem
 
-# we can use another model here if we want better performance, but this is a baseline, so I'll use the most famous one
+# Baseline model; swap here (e.g. SigLIP 2) to compare
 MODEL_NAME = "sentence-transformers/clip-ViT-B-32"
+CHROMA_PATH = Path("data/chroma")
+COLLECTION_NAME = "clip-vit-b-32-corpus"
 
-# we embed once and we run them from disk 
+
 def embed_images(items: list[ScienceQAItem], model_name: str = MODEL_NAME) -> np.ndarray:
     model = SentenceTransformer(model_name)
     images = [Image.open(i.image).convert("RGB") for i in items]
     return model.encode(
-        images, 
+        images,
         batch_size=32,
         show_progress_bar=True,
-        normalize_embeddings=True
+        normalize_embeddings=True,
     )
 
-def save_index(vectors: np.ndarray, items: list[ScienceQAItem], path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(path, vectors=vectors, ids=np.array([i.id for i in items]))
 
-def load_index(path: Path) -> tuple[np.ndarray, list[str]]:
-    data = np.load(path)
-    return data["vectors"], data["ids"].tolist()
+def item_metadata(item: ScienceQAItem) -> dict[str, str | int]:
+    return {
+        "grade": item.grade,
+        "subject": item.subject,
+        "topic": item.topic,
+        "category": item.category,
+        "skill": item.skill,
+    }
+
+
+def build_collection(
+    items: list[ScienceQAItem],
+    vectors: np.ndarray,
+    path: Path = CHROMA_PATH,
+    name: str = COLLECTION_NAME,
+) -> chromadb.Collection:
+    client = chromadb.PersistentClient(path=str(path))
+    collection = client.get_or_create_collection(name)
+    collection.upsert(
+        ids=[i.id for i in items],
+        embeddings=vectors,
+        metadatas=[item_metadata(i) for i in items],
+    )
+    return collection
