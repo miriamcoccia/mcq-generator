@@ -1,31 +1,38 @@
 """
-try_retrieve.py: runs retrieval for one eval item and prints what comes back
+try_retrieve.py: runs the fallback ladder for every eval item and counts which level was used
 """
+
+from collections import Counter
 from pathlib import Path
-from mcq_generator.retrieve import grade_range_filter, search
 
 import chromadb
-from collections import Counter 
 
 from mcq_generator.data import drop_image_choices, load_items
 from mcq_generator.domain import Query
 from mcq_generator.index import CHROMA_PATH, COLLECTION_NAME, embed_images
-from mcq_generator.retrieve import level1_filter, search
+from mcq_generator.retrieve import retrieve
 from mcq_generator.split import split_items
 
-items = drop_image_choices(load_items(Path("data/scienceqa/problems.csv"), Path("data/scienceqa/images")))
+items = drop_image_choices(
+    load_items(Path("data/scienceqa/problems.csv"), Path("data/scienceqa/images"))
+)
 corpus, eval_set = split_items(items)
-by_id = {i.id: i for i in corpus}
-collection = chromadb.PersistentClient(path=str(CHROMA_PATH)).get_collection(COLLECTION_NAME)
+collection = chromadb.PersistentClient(path=str(CHROMA_PATH)).get_collection(
+    COLLECTION_NAME
+)
 
-item = eval_set[0]
-query = Query(item.image, item.grade, item.subject, item.topic, item.category, item.skill)
-query_vector = embed_images([item])[0]        # same model as the index, or distances mean nothing
+vectors = embed_images(eval_set)  # all eval images in one batch
 
-ids = search(collection, query_vector, grade_range_filter(query, window=1))
-print("QUERY:", query.skill, "| grade", query.grade)
-for i in ids:
-    print("  ", by_id[i].skill, "| grade", by_id[i].grade, "|", by_id[i].image)
+levels = Counter()
+short = []  # items that got fewer than 3 examples
+for item, vec in zip(eval_set, vectors):
+    query = Query(
+        item.image, item.grade, item.subject, item.topic, item.category, item.skill
+    )
+    ids, level = retrieve(collection, vec, query)
+    levels[level] += 1
+    if len(ids) < 3:
+        short.append(item.id)
 
-matches = collection.get(where=grade_range_filter(query, window=1))
-print(Counter(m["grade"] for m in matches["metadatas"]))
+print("Level used:", sorted(levels.items()))
+print("Fewer than 3 examples:", len(short))
