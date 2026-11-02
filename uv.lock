@@ -1119,6 +1119,7 @@ dependencies = [
     { name = "chromadb" },
     { name = "pandas" },
     { name = "pillow" },
+    { name = "pydantic" },
     { name = "sentence-transformers" },
 ]
 
@@ -1127,6 +1128,7 @@ requires-dist = [
     { name = "chromadb", specifier = ">=1.5.9" },
     { name = "pandas", specifier = ">=3.1.0" },
     { name = "pillow", specifier = ">=13.0.0" },
+    { name = "pydantic", specifier = ">=2.14.1" },
     { name = "sentence-transformers", specifier = ">=6.2.0" },
 ]
 
