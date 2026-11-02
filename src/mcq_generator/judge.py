@@ -1,8 +1,10 @@
 "judge_prompts.py: reuses the prompt from Robust LLM-as-a-Judge Validators to validate the generated MCQs in its various declinations (zero-shot, RAG few-shot, random few-shot) at the end of the pipeline."
-from mcq_generator.domain import ScienceQAItem
+
+from mcq_generator.domain import ScienceQAItem, Query
 import string
 
-def format_characteristics(item: ScienceQAItem) -> str:
+
+def format_characteristics(item: ScienceQAItem | Query) -> str:
     return (
         f"Student Grade Level: {item.grade}\n"
         f"Subject: {item.subject}\n"
@@ -11,6 +13,7 @@ def format_characteristics(item: ScienceQAItem) -> str:
         f"Skill: {item.skill}\n"
     )
 
+
 def format_choices(choices: tuple[str, ...]) -> str:
     options = ""
     uppercase = string.ascii_uppercase
@@ -18,8 +21,10 @@ def format_choices(choices: tuple[str, ...]) -> str:
         options += f"({uppercase[i]}) {choice} "
     return options.strip()
 
+
 def format_context(hint: str) -> str:
     return hint.strip() or "N/A"
+
 
 def format_question(item: ScienceQAItem) -> str:
     input_part = (
