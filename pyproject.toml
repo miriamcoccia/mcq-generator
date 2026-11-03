@@ -5,7 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "bert-score>=0.3.13",
     "chromadb>=1.5.9",
+    "nltk>=3.10.4",
     "openai>=3.42.1",
     "pandas>=3.1.0",
     "pillow>=13.0.0",
