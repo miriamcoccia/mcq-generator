@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, ConfigDict
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,7 @@ class Query:
 
 
 class GeneratedMCQ(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     question: str
     context: str
     choices: tuple[str, ...]
