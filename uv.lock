@@ -1198,6 +1198,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pillow" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "sentence-transformers" },
 ]
 
@@ -1208,6 +1209,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=3.1.0" },
     { name = "pillow", specifier = ">=13.0.0" },
     { name = "pydantic", specifier = ">=2.14.1" },
+    { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "sentence-transformers", specifier = ">=6.2.0" },
 ]
 

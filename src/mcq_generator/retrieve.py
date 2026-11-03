@@ -33,7 +33,7 @@ def select_examples(
     if condition == Condition.METADATA:
         return metadata_examples(collection, query, item_id, k)
     if condition == Condition.RAG:
-        return retrieve(collection, query_vector, k)
+        return retrieve(collection, query_vector, query, k)
     raise ValueError(f"Unknown condition: {condition}")
 
 
