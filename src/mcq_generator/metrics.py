@@ -9,6 +9,13 @@ from collections import Counter
 
 from nltk import ngrams, word_tokenize
 from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
+import numpy as np  # top of the file
+import torch
+from bert_score import score as bert_score
+from transformers import AutoModelForMaskedLM, AutoTokenizer
+
+PPL_MODEL = "bert-base-uncased"
+BERTSCORE_MODEL = "roberta-large"
 
 
 def normalize_answer(s: str) -> str:
@@ -56,3 +63,33 @@ def lexical_diversity(prediction: str, rank: int = 3) -> float:
     if not words:
         return 0.0
     return len(set(ngrams(words, rank))) / len(words)
+
+
+def load_ppl_model(name: str = PPL_MODEL):
+    return AutoModelForMaskedLM.from_pretrained(name), AutoTokenizer.from_pretrained(
+        name
+    )
+
+
+def pseudo_perplexity(sentence: str, model, tokenizer) -> float:
+    """Same computation as the reference compute_perplexity, but the model is loaded once by the caller."""
+    tensor_input = tokenizer.encode(sentence, return_tensors="pt")
+    repeat_input = tensor_input.repeat(tensor_input.size(-1) - 2, 1)
+    mask = torch.ones(tensor_input.size(-1) - 1).diag(1)[:-2]
+    masked_input = repeat_input.masked_fill(mask == 1, tokenizer.mask_token_id)
+    labels = repeat_input.masked_fill(masked_input != tokenizer.mask_token_id, -100)
+    with torch.inference_mode():
+        loss = model(masked_input, labels=labels).loss
+    return float(np.exp(loss.item()))
+
+
+def bertscore_f1(predictions: list[str], references: list[str]) -> list[float]:
+    _, _, f = bert_score(
+        predictions,
+        references,
+        model_type=BERTSCORE_MODEL,
+        rescale_with_baseline=True,
+        verbose=True,
+        lang="en",
+    )
+    return f.tolist()
