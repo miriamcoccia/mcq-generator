@@ -53,6 +53,10 @@ class GeneratedMCQ(BaseModel):
             )
         return self
 
+    @property
+    def answer_text(self) -> str:
+        return self.choices[self.answer]
+
 
 class GenerationRecord(BaseModel):  # one line of the result file should look like this
     item_id: str
