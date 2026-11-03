@@ -51,3 +51,14 @@ class GeneratedMCQ(BaseModel):
                 f"answer {self.answer} is not a valid index for {len(self.choices)} choices"
             )
         return self
+
+
+class GenerationRecord(BaseModel):  # one line of the result file should look like this
+    item_id: str
+    condition: str
+    model: str
+    example_ids: list[str]  # which examples were included in the prompt
+    ladder_level: (
+        int | None
+    )  # which fallback level? (none for zero and random condition)
+    mcq: GeneratedMCQ
