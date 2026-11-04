@@ -1,0 +1,16 @@
+{
+  "Scope": "The activity is suitable to assess a target learning outcome at a given Student Grade Level.",
+  "Background": "Students at the given Grade Level have the required background to understand and solve the activity.",
+  "Clarity": "The activity describes the context, task and intended outcome unambiguously. The solution is clear and all the steps, decisions and alternatives are outlined.",
+  "Conciseness": "The problem statement is succinct, avoiding repetition and verbosity.",
+  "Reliability": "It is possible to consistently evaluate the correctness of a candidate solution.",
+  "Discrimination": "Distractors are effective at drawing incorrect answers.",
+  "Correctness": "The problem statement does not contain errors, missing or inconsistent data. The solution fulfills all the requirements and contains no errors or omissions. All valid solutions have been characterized & invalid alternatives are indeed invalid.",
+  "Difficulty": "The activity is neither obvious nor impossible for a given Student Grade Level: it is challenging yet feasible.",
+  "Workload": "The activity takes an average student, for a given Student Grade Level, a reasonable amount of time to be solved.",
+  "Format": "The description of the activity adheres to the requested format or template.",
+  "Accessibility": "The activity can be understood and solved by students with special needs.",
+  "Authenticity": "The activity captures a realistic scenario that is relevant to students and the field.",
+  "Inclusivity": "The activity does not contain inappropriate or biased content.",
+  "Validity": "The activity tests a relevant skill considering all its relevant perspectives."
+}
