@@ -3,11 +3,20 @@ prompting.py: builds the message parts sent to the LLM (examples, images, task)
 """
 
 from mcq_generator.domain import GeneratedMCQ, ScienceQAItem, Query
-from mcq_generator.judge import format_characteristics
 import base64
 from pathlib import Path
 
 PROMPTS_DIR = Path("prompts/generation")
+
+
+def format_characteristics(item: ScienceQAItem | Query) -> str:
+    return (
+        f"Student Grade Level: {item.grade}\n"
+        f"Subject: {item.subject}\n"
+        f"Topic: {item.topic}\n"
+        f"Category: {item.category}\n"
+        f"Skill: {item.skill}\n"
+    )
 
 
 def item_to_mcq(item: ScienceQAItem) -> GeneratedMCQ:

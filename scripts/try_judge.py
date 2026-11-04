@@ -10,13 +10,13 @@ from openai import OpenAI
 from mcq_generator.data import drop_image_choices, load_items
 from mcq_generator.generate import load_records
 from mcq_generator.judge import (
-    format_characteristics,
     format_conditions,
     format_question,
     judge,
     load_traits,
     render_judge_prompt,
 )
+from mcq_generator.prompting import format_characteristics
 
 load_dotenv()
 

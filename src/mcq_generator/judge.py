@@ -1,26 +1,27 @@
-"judge_prompts.py: reuses the prompt from Robust LLM-as-a-Judge Validators to validate the generated MCQs in its various declinations (zero-shot, RAG few-shot, random few-shot) at the end of the pipeline."
+"""
+judge.py: render judge prompts and run the V1 text judge and the image judge separately
+"""
 
-from mcq_generator.domain import ScienceQAItem, Query, GeneratedMCQ
-import string
 import json
+import string
 from pathlib import Path
 from typing import List
+
 from openai import OpenAI
 from pydantic import BaseModel, Field, model_validator
 
-JUDGE_PROMPT_PATH = Path("prompts/judges/general_v1.txt")
-TRAITS_PATH = Path("prompts/judges/general_v1_traits.json")
+from mcq_generator.domain import GeneratedMCQ
+from mcq_generator.prompting import image_part, text_part
+
 JUDGE_MODEL = "gpt-5.6-luna"
 
+JUDGE_PROMPT_PATH = Path("prompts/judges/general_v1.txt")
+TRAITS_PATH = Path("prompts/judges/general_v1_traits.json")
+IMAGE_PROMPT_PATH = Path("prompts/judges/image_judge.txt")
+IMAGE_PROPERTIES_PATH = Path("prompts/judges/image_properties.json")
 
-def format_characteristics(item: ScienceQAItem | Query) -> str:
-    return (
-        f"Student Grade Level: {item.grade}\n"
-        f"Subject: {item.subject}\n"
-        f"Topic: {item.topic}\n"
-        f"Category: {item.category}\n"
-        f"Skill: {item.skill}\n"
-    )
+
+# ---------- Shared formatting ----------
 
 
 def format_choices(choices: tuple[str, ...]) -> str:
@@ -32,7 +33,7 @@ def format_choices(choices: tuple[str, ...]) -> str:
 
 
 def format_context(hint: str) -> str:
-    return hint.strip() or "N/A"
+    return "N/A" if not hint.strip() else hint.strip()
 
 
 def format_question(mcq: GeneratedMCQ) -> str:
@@ -54,8 +55,14 @@ def format_question(mcq: GeneratedMCQ) -> str:
     return text
 
 
+# ---------- V1 text judge ----------
+
+
 def load_traits() -> dict[str, str]:
     return json.loads(TRAITS_PATH.read_text(encoding="utf-8"))
+
+
+traits_list = load_traits()
 
 
 def format_conditions(traits: dict[str, str]) -> str:
@@ -64,14 +71,16 @@ def format_conditions(traits: dict[str, str]) -> str:
 
 def render_judge_prompt(characteristics: str, question: str, conditions: str) -> str:
     template = JUDGE_PROMPT_PATH.read_text(encoding="utf-8")
+
+    for slot in ("{prompt}", "{questionnaire}", "{conditions}"):
+        if slot not in template:
+            raise ValueError(f"Slot {slot} not found in {JUDGE_PROMPT_PATH}")
+
     return (
         template.replace("{prompt}", characteristics)
         .replace("{questionnaire}", question)
         .replace("{conditions}", conditions)
     )
-
-
-traits_list = load_traits()
 
 
 class Trait(BaseModel):
@@ -119,5 +128,53 @@ def judge(client: OpenAI, prompt: str, model: str = JUDGE_MODEL) -> TraitList:
         model=model,
         messages=[{"role": "user", "content": prompt}],
         response_format=TraitList,
+    )
+    return completion.choices[0].message.parsed
+
+
+# ---------- Image judge ----------
+
+
+def load_image_properties() -> list[dict[str, str]]:
+    return json.loads(IMAGE_PROPERTIES_PATH.read_text(encoding="utf-8"))
+
+
+def format_image_conditions(properties: list[dict[str, str]]) -> str:
+    return "\n".join(f"- {p['name']}: {p['definition']}" for p in properties)
+
+
+def render_image_judge_prompt(
+    characteristics: str, question: str, conditions: str
+) -> str:
+    template = IMAGE_PROMPT_PATH.read_text(encoding="utf-8")
+
+    for slot in ("{characteristics}", "{question}", "{conditions}"):
+        if slot not in template:
+            raise ValueError(f"Slot {slot} not found in {IMAGE_PROMPT_PATH}")
+
+    return (
+        template.replace("{characteristics}", characteristics)
+        .replace("{question}", question)
+        .replace("{conditions}", conditions)
+    )
+
+
+class PropertyVerdict(BaseModel):
+    property: str
+    passed: bool
+    reasoning: str
+
+
+class ImageJudgeResult(BaseModel):
+    verdicts: list[PropertyVerdict]
+
+
+def judge_image(
+    client: OpenAI, prompt: str, image: Path, model: str = JUDGE_MODEL
+) -> ImageJudgeResult:
+    completion = client.chat.completions.parse(
+        model=model,
+        messages=[{"role": "user", "content": [text_part(prompt), image_part(image)]}],
+        response_format=ImageJudgeResult,
     )
     return completion.choices[0].message.parsed

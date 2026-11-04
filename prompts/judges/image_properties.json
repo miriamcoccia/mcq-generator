@@ -1,0 +1,14 @@
+[
+  {
+    "name": "functional_relevance",
+    "definition": "functional_relevance evaluates if an image provides information directly relevant to answering a question, either by being essential for the answer or by significantly aiding comprehension. The image's purpose should be to assist in answering the question, not merely to serve as a decorative element."
+  },
+  {
+    "name": "visual_clarity",
+    "definition": "visual_clarity evaluates the directness of the image in representing only what is needed to answer the question, without unnecessary clutter, decorations, or competing elements that could distract from the main content. Important items should be clearly identifiable to reduce the mental effort needed for visual search. "
+  },
+  {
+    "name": "text_image_coherence",
+    "definition": "text_image_coherence assesses whether the image and text components of a question convey consistent information without contradictions or unnecessary spatial separation. Misalignment can alter the interpretation of the question or create a split-attention effect."
+  }
+]
