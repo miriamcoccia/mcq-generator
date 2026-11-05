@@ -63,3 +63,27 @@ def build_judge_lines(record: GenerationRecord, item: ScienceQAItem) -> list[dic
             IMAGE_RESPONSE_FORMAT,
         ),
     ]
+
+
+def parse_judge_result(result: dict) -> list[dict]:
+    item_id, condition, judge_name = result["custom_id"].split("__")
+    content = result["response"]["body"]["choices"][0]["message"]["content"]
+
+    if judge_name == "v1":
+        verdicts = TraitList.model_validate_json(content).traits_output
+        triples = [(v.trait, v.valid, v.reasoning) for v in verdicts]
+    else:
+        verdicts = ImageJudgeResult.model_validate_json(content).verdicts
+        triples = [(v.property, v.passed, v.reasoning) for v in verdicts]
+
+    return [
+        {
+            "item_id": item_id,
+            "condition": condition,
+            "judge": judge_name,
+            "criterion": criterion,
+            "passed": passed,
+            "reasoning": reasoning,
+        }
+        for criterion, passed, reasoning in triples
+    ]
