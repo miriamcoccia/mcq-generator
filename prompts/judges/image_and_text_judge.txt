@@ -1,0 +1,21 @@
+Given the CHARACTERISTICS below, the IMAGE attached, and the QUESTION given by an AI assistant as a response to the CHARACTERISTICS. 
+            
+            Does the QUESTION comply with the following LIST_OF_CONDITIONS (which are provided in JSON format, with keys "trait" and "condition")? ")
+            
+            CHARACTERISTICS: ```{prompt}``` 
+            
+            QUESTION: ```{questionnaire}```
+            
+            LIST_OF_CONDITIONS: ```{conditions}```
+
+Now, consider the IMAGE attached. Does the IMAGE comply with the following LIST_OF_IMAGE_CONDITIONS.
+
+            LIST_OF_IMAGE_CONDITIONS:
+            {image_conditions}
+
+For each condition, respond in JSON format as a list of objects, each with these exact keys:
+- "property": the property name
+- "passed": true or false
+- "reasoning": a brief explanation if passed is false, otherwise an empty string
+
+Respond with ONLY the JSON, no other text.
